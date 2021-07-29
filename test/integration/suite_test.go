@@ -177,6 +177,19 @@ func TestMain(m *testing.M) {
 		}
 	}()
 
+	fmt.Printf("INFO: reconfiguring the kong admin service as LoadBalancer type\n")
+	svc, err := env.Cluster().Client().CoreV1().Services(kongAddon.Namespace()).Get(ctx, kong.DefaultAdminServiceName, metav1.GetOptions{})
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: could not get proxy admin service from cluster: %s", err)
+		os.Exit(ExitCodeCantCreateCluster)
+	}
+	svc.Spec.Type = corev1.ServiceTypeLoadBalancer
+	_, err = env.Cluster().Client().CoreV1().Services(kongAddon.Namespace()).Update(ctx, svc, metav1.UpdateOptions{})
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: could not update proxy admin service: %s", err)
+		os.Exit(ExitCodeCantCreateCluster)
+	}
+
 	fmt.Printf("INFO: waiting for cluster %s and all addons to become ready\n", env.Cluster().Name())
 	if err := <-env.WaitForReady(ctx); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: testing environment never became ready: %s", err)
