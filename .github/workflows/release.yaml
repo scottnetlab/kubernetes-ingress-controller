@@ -1,20 +1,25 @@
 name: release
 
 on:
+  # FIXME - remove before merge
+  pull_request:
+    branches:
+      - '*'
   push:
     branches:
       - 'main'
       - 'next'
 
 jobs:
-  kubernetes-version-tests:
+  kubernetes-legacy:
     environment: gcloud
     runs-on: ubuntu-latest
     strategy:
       matrix:
         minor:
-          - '17'
-          - '18'
+          # FIXME: temporarily disabled (tests need refactor)
+          #- '17'
+          #- '18'
           - '19'
           - '20'
         dbmode:

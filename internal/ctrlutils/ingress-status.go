@@ -171,7 +171,7 @@ func UpdateIngressV1(ctx context.Context, logger logr.Logger, svc file.FService,
 			if err == nil {
 				break
 			}
-			log.Errorf("failed to update Ingress V1 status. %v. retrying...", err)
+			log.Debugf("failed to update Ingress V1 status. %v. retrying...", err)
 			time.Sleep(time.Second)
 			retry++
 		}
@@ -220,7 +220,7 @@ func UpdateUDPIngress(ctx context.Context, logger logr.Logger, svc file.FService
 			if err == nil {
 				break
 			}
-			log.Errorf("failed to update UDPIngress status: %v. retry...", err)
+			log.Debugf("failed to update UDPIngress status: %v. retry...", err)
 			time.Sleep(time.Second)
 			retry++
 		}
@@ -327,7 +327,7 @@ func UpdateKnativeIngress(ctx context.Context, logger logr.Logger, svc file.FSer
 			if err == nil {
 				break
 			}
-			log.Errorf("failed to update ingress status: %v. retrying...", err)
+			log.Debugf("failed to update ingress status: %v. retrying...", err)
 			time.Sleep(time.Second)
 			retry++
 		}
