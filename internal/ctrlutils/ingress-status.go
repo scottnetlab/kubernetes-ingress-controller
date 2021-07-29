@@ -13,6 +13,7 @@ import (
 	"github.com/kong/deck/file"
 	"github.com/prometheus/common/log"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -144,7 +145,11 @@ func UpdateIngressV1(ctx context.Context, logger logr.Logger, svc file.FService,
 		for retry < statusUpdateRetry {
 			curIng, err := ingCli.Get(ctx, name, metav1.GetOptions{})
 			if err != nil || curIng == nil {
-				log.Errorf("failed to fetch Ingress %v/%v: %v. retrying...", namespace, name, err)
+				if errors.IsNotFound(err) {
+					log.Debugf("ingress %s/%s no longer exists: skipped", namespace, name)
+					return nil
+				}
+				log.Debugf("failed to fetch Ingress %v/%v: %v. retrying...", namespace, name, err)
 				retry++
 				time.Sleep(time.Second)
 				continue
@@ -189,7 +194,11 @@ func UpdateUDPIngress(ctx context.Context, logger logr.Logger, svc file.FService
 		for retry < statusUpdateRetry {
 			curIng, err := ingCli.Get(ctx, name, metav1.GetOptions{})
 			if err != nil || curIng == nil {
-				log.Errorf("failed to fetch UDP Ingress %v/%v: %v", namespace, name, err)
+				if errors.IsNotFound(err) {
+					log.Debugf("udpingress %s/%s no longer exists: skipped", namespace, name)
+					return nil
+				}
+				log.Debugf("failed to fetch UDP Ingress %v/%v: %v", namespace, name, err)
 				time.Sleep(time.Second)
 				retry++
 				continue
@@ -232,6 +241,10 @@ func UpdateTCPIngress(ctx context.Context, logger logr.Logger, svc file.FService
 		ingCli := kiccli.ConfigurationV1beta1().TCPIngresses(namespace)
 		curIng, err := ingCli.Get(ctx, name, metav1.GetOptions{})
 		if err != nil || curIng == nil {
+			if errors.IsNotFound(err) {
+				log.Debugf("tcpingress %s/%s no longer exists: skipped", namespace, name)
+				return nil
+			}
 			return fmt.Errorf("failed to fetch TCP Ingress %v/%v: %w", namespace, name, err)
 		}
 
@@ -277,7 +290,11 @@ func UpdateKnativeIngress(ctx context.Context, logger logr.Logger, svc file.FSer
 		for retry < statusUpdateRetry {
 			curIng, err := ingClient.Get(ctx, name, metav1.GetOptions{})
 			if err != nil || curIng == nil {
-				log.Errorf("failed to fetch Knative Ingress %v/%v: %v", namespace, name, err)
+				if errors.IsNotFound(err) {
+					log.Debugf("knative ingress %s/%s no longer exists: skipped", namespace, name)
+					return nil
+				}
+				log.Debugf("failed to fetch Knative Ingress %v/%v: %v", namespace, name, err)
 				time.Sleep(time.Second)
 				retry++
 				continue
