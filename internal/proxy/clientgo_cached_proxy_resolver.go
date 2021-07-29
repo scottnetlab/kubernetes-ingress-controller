@@ -321,12 +321,37 @@ func (p *clientgoCachedProxyResolver) cacheDelete(cobj *cachedObject) error {
 	return cobj.err
 }
 
+const (
+	// rootRetries indicates the total number of times to retry connecting to the kong root
+	rootRetries = 3
+
+	// rootRetryTick indicates the amount of time to wait in between kong root retries
+	rootRetryTick = time.Second * 1
+)
+
 // kongRootWithTimeout provides the root configuration from Kong, but uses a configurable timeout to avoid long waits if the Admin API
-// is not yet ready to respond. If a timeout error occurs, the caller is responsible for providing a retry mechanism.
+// is not yet ready to respond. If a timeout error occurs a small number of retries will be attempted internally.
 func (p *clientgoCachedProxyResolver) kongRootWithTimeout() (map[string]interface{}, error) {
 	ctx, cancel := context.WithTimeout(p.ctx, p.timeout)
 	defer cancel()
-	return p.kongConfig.Client.Root(ctx)
+
+	root, err := p.kongConfig.Client.Root(ctx)
+	if err != nil {
+		retries := rootRetries
+		for retries > 0 {
+			retries--
+			root, err = p.kongConfig.Client.Root(ctx)
+			if err == nil {
+				break
+			}
+			time.Sleep(rootRetryTick)
+		}
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return root, nil
 }
 
 // fetchCustomEntities returns the value of the "config" key from a Secret (identified by a "namespace/secretName"
