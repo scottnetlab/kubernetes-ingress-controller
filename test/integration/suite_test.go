@@ -166,10 +166,6 @@ func TestMain(m *testing.M) {
 		fmt.Fprintf(os.Stderr, "Error: could not create testing environment: %s", err)
 		os.Exit(ExitCodeCantCreateCluster)
 	}
-	fmt.Printf(
-		"INFO: environment built CLUSTER_NAME=(%s) CLUSTER_TYPE=(%s) ADDONS=(metallb, kong)\n",
-		env.Cluster().Name(), env.Cluster().Type(),
-	)
 	defer func() {
 		if err := env.Cleanup(ctx); err != nil {
 			fmt.Fprintf(os.Stderr, "Error: could not cleanup testing environment: %s", err)
@@ -223,7 +219,7 @@ func TestMain(m *testing.M) {
 		}
 	}
 
-	fmt.Printf("INFO: running final testing environment checks")
+	fmt.Println("INFO: running final testing environment checks")
 	serverVersion, err := env.Cluster().Client().ServerVersion()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: could not retrieve server version for cluster: %s", err)
