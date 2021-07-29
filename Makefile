@@ -155,7 +155,7 @@ container:
 # Test
 # ------------------------------------------------------------------------------
 
-PKG_LIST = ./...
+PKG_LIST = pkg/...,internal/...
 COVERAGE_PROFILE=coverage.out
 COVERAGE_INTEGRATION_PROFILE=coverage-integration.out
 KIND_CLUSTER_NAME ?= "integration-tests"
